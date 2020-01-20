@@ -26,17 +26,22 @@ io.on('connection', (client) => {
         // enviamos el mensaje de conexion nuevametne a todos los clientes
         client.broadcast.to(data.sala).emit('listaPersona', usuarios.getPersonaPorSala(data.sala));
 
+        // enviamos un mensaje cuando un usario se conecta a la sala
+        client.broadcast.to(data.sala).emit('crearMensaje', crearMensaje('Admin', `${data.nombre} entró en el chat`));
+
         callback(usuarios.getPersonaPorSala(data.sala));
     });
 
     // escuchamos los mensajes
-    client.on('crearMensaje', (data) => {
+    client.on('crearMensaje', (data, callback) => {
 
         let persona = usuarios.getPersona(client.id);
 
         let mensaje = crearMensaje(persona.nombre, data.mensaje);
 
         client.broadcast.to(persona.sala).emit('crearMensaje', mensaje);
+
+        callback(mensaje);
     });
 
 
@@ -54,7 +59,7 @@ io.on('connection', (client) => {
 
 
     // envio de mensajes privados
-    client.on('mensajePrivado', data => {
+    client.on('mensajePrivado', (data) => {
 
         let persona = usuarios.getPersona(client.id);
 
